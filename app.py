@@ -135,7 +135,8 @@ def predict():
         })
         
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        print(f"Error during prediction: {e}")
+        return jsonify({'error': 'An error occurred during prediction. Please try again.'}), 500
 
 @app.route('/health', methods=['GET'])
 def health():
@@ -160,4 +161,7 @@ if __name__ == '__main__':
     print("Open http://localhost:5000 in your browser to use the app")
     print("=" * 60)
     
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # Use debug=False for production, debug=True only for development
+    # For production deployment, use a production WSGI server like gunicorn
+    debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
+    app.run(debug=debug_mode, host='0.0.0.0', port=5000)

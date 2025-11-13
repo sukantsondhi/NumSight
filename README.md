@@ -67,9 +67,27 @@ A machine learning web application that recognizes handwritten digits using a Co
    ```bash
    python app.py
    ```
+   
+   For development with debug mode:
+   ```bash
+   FLASK_DEBUG=true python app.py
+   ```
 
 5. **Open your browser**
    Navigate to `http://localhost:5000`
+
+## Production Deployment
+
+For production deployment, it's recommended to:
+
+1. **Disable debug mode** (default behavior)
+2. **Use a production WSGI server** like Gunicorn:
+   ```bash
+   pip install gunicorn
+   gunicorn -w 4 -b 0.0.0.0:5000 app:app
+   ```
+3. **Use a reverse proxy** like Nginx
+4. **Enable HTTPS** with SSL certificates
 
 ## Usage
 
@@ -185,6 +203,22 @@ Health check endpoint
 - Check if port 5000 is already in use
 - Make sure all dependencies are installed
 - Verify Python version is 3.8 or higher
+
+## Security
+
+This application implements several security best practices:
+
+- **Debug mode disabled by default**: Prevents exposure of sensitive debugging information
+- **Error message sanitization**: Stack traces are not exposed to users
+- **Input validation**: Images are validated before processing
+- **Safe dependencies**: All dependencies are regularly updated for security
+
+For production deployment, additional security measures should be implemented:
+- Use HTTPS/SSL encryption
+- Implement rate limiting
+- Add authentication if needed
+- Use environment variables for configuration
+- Regular security audits and updates
 
 ## Contributing
 
