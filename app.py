@@ -70,6 +70,16 @@ def index():
     """Serve the main HTML page."""
     return send_from_directory('static', 'index.html')
 
+@app.route('/style.css')
+def style():
+    """Serve the CSS file."""
+    return send_from_directory('static', 'style.css')
+
+@app.route('/script.js')
+def script():
+    """Serve the JavaScript file."""
+    return send_from_directory('static', 'script.js')
+
 @app.route('/predict', methods=['POST'])
 def predict():
     """

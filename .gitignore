@@ -30,6 +30,10 @@ wheels/
 models/*.keras
 models/*.h5
 
+# ML Data
+*.npz
+training_history.png
+
 # Jupyter Notebook
 .ipynb_checkpoints
 
