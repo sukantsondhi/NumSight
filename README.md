@@ -14,6 +14,7 @@ A machine learning web application that recognizes handwritten digits using a Co
 ## Tech Stack
 
 ### Backend
+
 - **Python 3.x**: Core programming language
 - **TensorFlow/Keras**: Deep learning framework for model training
 - **Flask**: Web framework for API server
@@ -21,11 +22,13 @@ A machine learning web application that recognizes handwritten digits using a Co
 - **Pillow (PIL)**: Image processing
 
 ### Frontend
+
 - **HTML5**: Structure
 - **CSS3**: Styling with gradients and animations
 - **JavaScript**: Canvas drawing and API interaction
 
 ### Model Architecture
+
 - Convolutional Neural Network (CNN)
 - Input: 28x28 grayscale images
 - 2 Convolutional layers with MaxPooling
@@ -36,42 +39,50 @@ A machine learning web application that recognizes handwritten digits using a Co
 ## Installation
 
 ### Prerequisites
+
 - Python 3.10 or 3.11 (recommended)
 - pip package manager
 
 ### Setup Instructions
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/sukantsondhi/Number-Visualizer.git
    cd Number-Visualizer
    ```
 
 2. **Install dependencies**
+
    ```bash
    pip install -r requirements.txt
    ```
 
 3. **Train the model**
+
    ```bash
    python train_model.py
    ```
-   
+
    This will:
+
    - Download the MNIST dataset automatically
    - Train a CNN model (takes 5-10 minutes)
    - Save the trained model to `models/mnist_model.keras` (modern format)
    - Generate a training history plot at `static/metrics/training_history.png`
 
 4. **Run the web application**
+
    ```bash
    python app.py
    ```
-   
+
    For development with debug mode:
+
    ```bash
    FLASK_DEBUG=true python app.py
    ```
+
 ### One-liner (Windows)
 
 Prefer a single command that sets everything up? Use the helper script:
@@ -81,7 +92,6 @@ scripts\run.ps1
 ```
 
 It will create/activate a venv, install dependencies, train the model if needed, and start the app.
-
 
 5. **Open your browser**
    Navigate to `http://localhost:5000`
@@ -113,25 +123,27 @@ Number-Visualizer/
 ├── app.py                 # Flask web server
 ├── train_model.py         # Model training script
 ├── requirements.txt       # Python dependencies
-├── .gitignore            # Git ignore rules
-├── README.md             # This file
-├── models/               # Trained models (generated)
-│   └── mnist_model.h5
-├── static/               # Frontend files
-│   ├── index.html       # Main HTML page
-│   ├── style.css        # Styling
-│   └── script.js        # JavaScript logic
-│   └── metrics/          # Generated training artifacts
+├── .gitignore             # Git ignore rules
+├── README.md              # Project docs
+├── scripts/               # Helpers for Windows
+│   └── run.ps1
+├── static/                # Frontend files
+│   ├── index.html         # Main HTML page
+│   ├── style.css          # Styling
+│   ├── script.js          # JavaScript logic
+│   └── metrics/           # Generated training artifacts
 │       └── training_history.png
-└── models/               # Trained models (generated)
-   └── mnist_model.keras
+└── models/                # Trained models (generated)
+   ├── mnist_model.keras  # Preferred model format
+   └── mnist_model.h5     # Optional legacy model (fallback)
 ```
 
-## Model Format & Performance
+### Model Format & Performance
 
 The model is saved in the native Keras format (`.keras`). The server will also accept legacy HDF5 (`.h5`) if present, but `.keras` is preferred for forward compatibility.
 
 The trained CNN model achieves:
+
 - **Test Accuracy**: ~99%
 - **Training Time**: 5-10 minutes on CPU
 - **Model Size**: ~3 MB
@@ -139,12 +151,15 @@ The trained CNN model achieves:
 ## API Endpoints
 
 ### `GET /`
+
 Serves the main web application
 
 ### `POST /predict`
+
 Predicts a digit from an uploaded image
 
 **Request Body:**
+
 ```json
 {
   "image": "base64_encoded_image_data"
@@ -152,6 +167,7 @@ Predicts a digit from an uploaded image
 ```
 
 **Response:**
+
 ```json
 {
   "digit": 7,
@@ -172,9 +188,11 @@ Predicts a digit from an uploaded image
 ```
 
 ### `GET /health`
+
 Health check endpoint
 
 **Response:**
+
 ```json
 {
   "status": "healthy",
@@ -185,17 +203,18 @@ Health check endpoint
 ## How It Works
 
 1. **Training Phase** (`train_model.py`):
-   - Loads the MNIST dataset (60,000 training images, 10,000 test images)
-   - Normalizes pixel values to [0, 1]
-   - Trains a CNN with 2 convolutional layers
-   - Saves the trained model
+
+   - Loads the MNIST dataset (60k train, 10k test); normalizes to [0,1]
+   - Applies light data augmentation (rotation/shift/zoom/contrast)
+   - CNN with 3 conv blocks + BatchNorm, Dropout regularization
+   - EarlyStopping + ModelCheckpoint save the best model (`.keras`)
 
 2. **Inference Phase** (`app.py`):
-   - User draws a digit on the canvas
-   - Canvas image is sent to the Flask server
-   - Image is preprocessed (resized to 28x28, normalized)
-   - Model predicts the digit
-   - Results are returned to the frontend
+
+   - User draws a digit on the canvas; image sent to Flask
+   - Preprocessing centers/crops/pads to MNIST style (20x20 in 28x28),
+     robustly inverts to white-on-black, binarizes, slight blur
+   - Model predicts digit + probabilities returned to the frontend
 
 3. **Frontend** (`static/`):
    - HTML5 Canvas for drawing
@@ -206,31 +225,35 @@ Health check endpoint
 ## Troubleshooting
 
 ### Model not found error
+
 - Make sure you've run `python train_model.py` first
-- Check that `models/mnist_model.h5` exists
+- Check that `models/mnist_model.keras` exists (or `.h5` as fallback)
 
 ### Poor prediction accuracy
+
 - Try drawing digits larger and centered
 - Make sure the digit is dark on a light background
 - Clear the canvas and try again
 
 ### Server won't start
+
 - Check if port 5000 is already in use
 - Make sure all dependencies are installed
 - Verify Python version is 3.8 or higher
 
 ### TensorFlow import errors
+
 - Ensure your virtual environment uses Python 3.10 or 3.11
 - Reinstall dependencies inside the venv:
-   ```powershell
-   .\.venv\Scripts\Activate.ps1
-   python -m pip install --upgrade pip
-   pip install -r requirements.txt
-   ```
-   Then verify:
-   ```powershell
-   python -c "import tensorflow as tf; print(tf.__version__)"
-   ```
+  ```powershell
+  .\.venv\Scripts\Activate.ps1
+  python -m pip install --upgrade pip
+  pip install -r requirements.txt
+  ```
+  Then verify:
+  ```powershell
+  python -c "import tensorflow as tf; print(tf.__version__)"
+  ```
 
 ## Security
 
@@ -242,6 +265,7 @@ This application implements several security best practices:
 - **Safe dependencies**: All dependencies are regularly updated for security
 
 For production deployment, additional security measures should be implemented:
+
 - Use HTTPS/SSL encryption
 - Implement rate limiting
 - Add authentication if needed
@@ -251,6 +275,7 @@ For production deployment, additional security measures should be implemented:
 ## PR Readiness Checklist
 
 Use this checklist when opening a pull request:
+
 - App runs locally: `python app.py` serves UI and `/predict` works
 - Model present or reproducible: `python train_model.py` succeeds
 - README updated with any changes to setup or run
