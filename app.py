@@ -9,7 +9,7 @@ This server provides endpoints for:
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageFilter
 import tensorflow as tf
 import io
 import os
@@ -50,28 +50,66 @@ def preprocess_image(image):
     Returns:
         numpy array: Preprocessed image ready for prediction
     """
-    # Convert to grayscale
-    image = image.convert('L')
-    
-    # Resize to 28x28
-    image = image.resize((28, 28), Image.Resampling.LANCZOS)
-    
-    # Convert to numpy array
-    img_array = np.array(image)
-    
-    # Invert if needed (MNIST digits are white on black background)
-    # Check if the image has more white pixels than black
-    if np.mean(img_array) > 127:
-        img_array = 255 - img_array
-    
-    # Normalize to [0, 1]
-    img_array = img_array.astype('float32') / 255.0
-    
-    # Reshape to (1, 28, 28, 1) for model input
-    img_array = np.expand_dims(img_array, axis=0)
-    img_array = np.expand_dims(img_array, axis=-1)
-    
-    return img_array
+    # Convert to grayscale (handle RGBA by compositing on white)
+    if image.mode in ('RGBA', 'LA'):
+        bg = Image.new('RGBA', image.size, (255, 255, 255, 255))
+        image = Image.alpha_composite(bg, image.convert('RGBA')).convert('L')
+    else:
+        image = image.convert('L')
+
+    # Convert to numpy for thresholding
+    arr = np.array(image)
+
+    # Determine background from border pixels and invert to MNIST style (white digit on black)
+    border = np.concatenate([
+        arr[0, :], arr[-1, :], arr[:, 0], arr[:, -1]
+    ])
+    bg_is_white = np.mean(border) > 200
+    if bg_is_white:
+        # Canvas is typically black digit on white background; invert to white-on-black
+        arr = 255 - arr
+
+    # Binarize (robust to different stroke intensities)
+    thresh = max(30, int(np.mean(arr) * 0.6))
+    bin_arr = (arr > thresh).astype(np.uint8) * 255
+
+    # Find bounding box of foreground
+    coords = np.column_stack(np.where(bin_arr > 0))
+    if coords.size == 0:
+        # Fallback to simple resize/normalize if nothing detected
+        small = Image.fromarray(arr).resize((28, 28), Image.Resampling.LANCZOS)
+        x = np.array(small).astype('float32') / 255.0
+        x = x[None, ..., None]
+        return x
+
+    y0, x0 = coords.min(axis=0)
+    y1, x1 = coords.max(axis=0) + 1
+
+    # Crop to bbox
+    cropped = arr[y0:y1, x0:x1]
+
+    # Make square by padding equally
+    h, w = cropped.shape
+    side = max(h, w)
+    pad_y = (side - h) // 2
+    pad_x = (side - w) // 2
+    square = np.pad(
+        cropped,
+        ((pad_y, side - h - pad_y), (pad_x, side - w - pad_x)),
+        mode='constant', constant_values=0
+    )
+
+    # Resize to 20x20 then pad to 28x28 (classic MNIST preprocessing)
+    img_20 = Image.fromarray(square).resize((20, 20), Image.Resampling.LANCZOS)
+    canvas28 = Image.new('L', (28, 28), color=0)
+    canvas28.paste(img_20, (4, 4))
+
+    # Slight blur to better match MNIST digit softness
+    canvas28 = canvas28.filter(ImageFilter.GaussianBlur(radius=0.5))
+
+    x = np.array(canvas28).astype('float32') / 255.0
+    x = x[None, ..., None]
+    return x
 
 @app.route('/')
 def index():

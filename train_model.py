@@ -20,18 +20,25 @@ def create_model():
         keras.Model: Compiled CNN model
     """
     model = keras.Sequential([
-        # Reshape input to 28x28x1
         layers.Input(shape=(28, 28, 1)),
-        
-        # First convolutional block
-        layers.Conv2D(32, kernel_size=(3, 3), activation='relu'),
-        layers.MaxPooling2D(pool_size=(2, 2)),
-        
-        # Second convolutional block
-        layers.Conv2D(64, kernel_size=(3, 3), activation='relu'),
-        layers.MaxPooling2D(pool_size=(2, 2)),
-        
-        # Flatten and dense layers
+
+        # Conv block 1
+        layers.Conv2D(32, (3, 3), padding='same'),
+        layers.BatchNormalization(),
+        layers.Activation('relu'),
+        layers.MaxPooling2D((2, 2)),
+
+        # Conv block 2
+        layers.Conv2D(64, (3, 3), padding='same'),
+        layers.BatchNormalization(),
+        layers.Activation('relu'),
+        layers.MaxPooling2D((2, 2)),
+
+        # Conv block 3 (small)
+        layers.Conv2D(96, (3, 3), padding='same'),
+        layers.BatchNormalization(),
+        layers.Activation('relu'),
+
         layers.Flatten(),
         layers.Dropout(0.5),
         layers.Dense(128, activation='relu'),
@@ -269,12 +276,32 @@ def main():
     model.summary()
     
     # Train model
-    print("\nTraining model...")
+    # Data augmentation to better match canvas drawings
+    data_augmentation = keras.Sequential([
+        layers.RandomRotation(0.1),
+        layers.RandomTranslation(0.1, 0.1),
+        layers.RandomZoom(0.1),
+        layers.RandomContrast(0.1)
+    ])
+
+    # Build augmented dataset
+    aug_x = data_augmentation(x_train)
+
+    # Callbacks: early stopping and checkpoint best model
+    callbacks = [
+        keras.callbacks.EarlyStopping(monitor='val_accuracy', patience=3, restore_best_weights=True),
+        keras.callbacks.ModelCheckpoint(os.path.join('models', 'mnist_model.keras'),
+                                        monitor='val_accuracy',
+                                        save_best_only=True)
+    ]
+
+    print("\nTraining model with augmentation and callbacks...")
     history = model.fit(
-        x_train, y_train,
+        aug_x, y_train,
         batch_size=128,
-        epochs=10,
+        epochs=15,
         validation_split=0.1,
+        callbacks=callbacks,
         verbose=1
     )
     
@@ -284,10 +311,13 @@ def main():
     print(f"Test accuracy: {test_accuracy * 100:.2f}%")
     print(f"Test loss: {test_loss:.4f}")
     
-    # Save model (prefer modern Keras format)
+    # Ensure best model is saved by checkpoint; for safety, save final weights too
     model_path = os.path.join('models', 'mnist_model.keras')
-    model.save(model_path)
-    print(f"\nModel saved to: {model_path}")
+    try:
+        model.save(model_path)
+        print(f"\nModel saved to: {model_path}")
+    except Exception as e:
+        print(f"Warning: Could not save final model due to: {e}")
     
     # Plot training history
     plot_training_history(history)
