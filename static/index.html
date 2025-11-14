@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MNIST Digit Recognizer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔢 Handwritten Digit Recognizer</h1>
+            <p class="subtitle">Draw a digit (0-9) and let AI recognize it!</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Drawing Canvas Section -->
+            <div class="canvas-section">
+                <h2>Draw Your Digit</h2>
+                <div class="canvas-container">
+                    <canvas id="canvas" width="280" height="280"></canvas>
+                </div>
+                <div class="controls">
+                    <button id="clearBtn" class="btn btn-secondary">Clear Canvas</button>
+                    <button id="predictBtn" class="btn btn-primary">Recognize Digit</button>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="results-section">
+                <h2>Prediction Results</h2>
+                <div id="resultsContainer" class="results-container">
+                    <div class="placeholder">
+                        <p>👆 Draw a digit and click "Recognize Digit" to see the prediction!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="instructions">
+            <h3>How to Use:</h3>
+            <ol>
+                <li>Draw a digit (0-9) on the canvas using your mouse or touch</li>
+                <li>Click the "Recognize Digit" button</li>
+                <li>View the AI's prediction and confidence scores</li>
+                <li>Click "Clear Canvas" to try another digit</li>
+            </ol>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <p>Powered by TensorFlow & MNIST Dataset</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
