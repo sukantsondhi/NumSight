@@ -1,6 +1,6 @@
 tensorflow==2.20.0
 numpy>=1.26.0
 flask==3.0.0
-flask-cors==4.0.0
+flask-cors==6.0.0
 pillow
 matplotlib==3.8.2
