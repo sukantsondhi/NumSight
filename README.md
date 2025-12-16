@@ -1,4 +1,4 @@
-# Number-Visualizer
+# NumSight
 
 A machine learning web application that recognizes handwritten digits using a Convolutional Neural Network (CNN) trained on the MNIST dataset. Draw a digit on the canvas, and the AI will predict what number you drew!
 
@@ -48,8 +48,8 @@ A machine learning web application that recognizes handwritten digits using a Co
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/sukantsondhi/Number-Visualizer.git
-   cd Number-Visualizer
+   git clone https://github.com/sukantsondhi/NumSight.git
+   cd NumSight
    ```
 
 2. **Install dependencies**
@@ -119,7 +119,7 @@ For production deployment, it's recommended to:
 ## Project Structure
 
 ```
-Number-Visualizer/
+NumSight/
 ├── app.py                 # Flask web server
 ├── train_model.py         # Model training script
 ├── requirements.txt       # Python dependencies
