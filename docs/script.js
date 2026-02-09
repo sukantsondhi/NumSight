@@ -12,8 +12,9 @@ let modelLoading = false;
 let useServerFallback = false;
 
 // Detect if running on localhost (Flask server) vs static hosting (GitHub Pages)
-const isLocalhost = window.location.hostname === "localhost" || 
-                    window.location.hostname === "127.0.0.1";
+const isLocalhost =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1";
 
 // Canvas setup
 const canvas = document.getElementById("canvas");
