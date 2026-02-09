@@ -54,16 +54,19 @@ async function loadModel() {
 
     return model;
   } catch (error) {
-    console.warn("TensorFlow.js model not found, using server fallback:", error.message);
+    console.warn(
+      "TensorFlow.js model not found, using server fallback:",
+      error.message,
+    );
     useServerFallback = true;
     modelLoading = false;
-    
+
     resultsContainer.innerHTML = `
             <div class="placeholder">
                 <p>✅ Ready! Draw a digit and click "Recognize Digit"</p>
             </div>
         `;
-    
+
     return null;
   }
 }
@@ -175,7 +178,7 @@ async function predict() {
 async function predictWithServer(resultsContainer) {
   try {
     const imageData = canvas.toDataURL("image/png");
-    
+
     const response = await fetch("/predict", {
       method: "POST",
       headers: {
