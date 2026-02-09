@@ -31,6 +31,10 @@ wheels/
 models/*.keras
 models/*.h5
 
+# Exception: TensorFlow.js model for GitHub Pages (must be committed)
+!docs/model/
+!docs/model/**
+
 # ML Data
 *.npz
 training_history.png

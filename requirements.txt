@@ -1,6 +1,12 @@
+# Core dependencies for running the app
 tensorflow==2.20.0
-numpy>=1.26.0
+numpy>=2.0.0
 flask==3.0.0
 flask-cors==4.0.0
-pillow
-matplotlib==3.8.2
+pillow>=12.0.0
+matplotlib>=3.9.0
+keras>=3.10.0
+
+# Dependencies for TensorFlow.js model conversion
+# Install these when you need to convert the model for browser deployment:
+#   pip install -r requirements-tfjs.txt

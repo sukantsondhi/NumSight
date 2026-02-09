@@ -1,0 +1,21 @@
+# Requirements for converting the Keras model to TensorFlow.js format
+# 
+# These packages have complex dependencies. Install with:
+#   pip install -r requirements-tfjs.txt
+#
+# If you encounter dependency resolution errors, install individually:
+#   pip install tensorflowjs==4.17.0 --no-deps
+#   pip install tensorflow-hub tf-keras h5py jax jaxlib flax importlib_resources --no-deps
+#   pip install "setuptools<70"
+
+tensorflowjs==4.17.0
+tensorflow-hub>=0.16.0
+tf-keras>=2.20.0
+h5py>=3.11.0
+jax>=0.4.13
+jaxlib>=0.4.13
+flax>=0.7.2
+importlib_resources>=5.9.0
+
+# Note: setuptools must be <70 for pkg_resources compatibility
+setuptools<70
