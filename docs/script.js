@@ -11,6 +11,10 @@ let model = null;
 let modelLoading = false;
 let useServerFallback = false;
 
+// Detect if running on localhost (Flask server) vs static hosting (GitHub Pages)
+const isLocalhost = window.location.hostname === "localhost" || 
+                    window.location.hostname === "127.0.0.1";
+
 // Canvas setup
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
@@ -54,18 +58,28 @@ async function loadModel() {
 
     return model;
   } catch (error) {
-    console.warn(
-      "TensorFlow.js model not found, using server fallback:",
-      error.message,
-    );
-    useServerFallback = true;
+    console.error("Failed to load TensorFlow.js model:", error.message);
     modelLoading = false;
 
-    resultsContainer.innerHTML = `
+    if (isLocalhost) {
+      // On localhost, fall back to Flask server API
+      console.log("Using server fallback for predictions");
+      useServerFallback = true;
+      resultsContainer.innerHTML = `
             <div class="placeholder">
                 <p>✅ Ready! Draw a digit and click "Recognize Digit"</p>
+                <p style="font-size: 0.8em; color: #666;">(Using server API)</p>
             </div>
         `;
+    } else {
+      // On GitHub Pages, show error - no server to fall back to
+      resultsContainer.innerHTML = `
+            <div class="error-message">
+                <strong>Error:</strong> Failed to load AI model.<br>
+                <small>Check browser console for details. Model path: ./model/model.json</small>
+            </div>
+        `;
+    }
 
     return null;
   }
