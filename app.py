@@ -15,7 +15,7 @@ import io
 import os
 import base64
 
-app = Flask(__name__, static_folder='static')
+app = Flask(__name__, static_folder='docs')
 CORS(app)
 
 # Load the trained model
@@ -114,17 +114,22 @@ def preprocess_image(image):
 @app.route('/')
 def index():
     """Serve the main HTML page."""
-    return send_from_directory('static', 'index.html')
+    return send_from_directory('docs', 'index.html')
 
 @app.route('/style.css')
 def style():
     """Serve the CSS file."""
-    return send_from_directory('static', 'style.css')
+    return send_from_directory('docs', 'style.css')
 
 @app.route('/script.js')
 def script():
     """Serve the JavaScript file."""
-    return send_from_directory('static', 'script.js')
+    return send_from_directory('docs', 'script.js')
+
+@app.route('/model/<path:filename>')
+def serve_model(filename):
+    """Serve TensorFlow.js model files."""
+    return send_from_directory('docs/model', filename)
 
 @app.route('/predict', methods=['POST'])
 def predict():

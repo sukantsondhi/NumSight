@@ -3,11 +3,13 @@
  *
  * This version runs entirely in the browser using TensorFlow.js,
  * enabling deployment to static hosting like GitHub Pages.
+ * Falls back to server API when running with Flask locally.
  */
 
 // Global model reference
 let model = null;
 let modelLoading = false;
+let useServerFallback = false;
 
 // Canvas setup
 const canvas = document.getElementById("canvas");
@@ -28,6 +30,7 @@ ctx.strokeStyle = "#000";
 async function loadModel() {
   if (model) return model;
   if (modelLoading) return null;
+  if (useServerFallback) return null;
 
   modelLoading = true;
   const resultsContainer = document.getElementById("resultsContainer");
@@ -41,7 +44,7 @@ async function loadModel() {
 
     // Load the model from the model/ subdirectory
     model = await tf.loadLayersModel("./model/model.json");
-    console.log("Model loaded successfully");
+    console.log("Model loaded successfully (TensorFlow.js)");
 
     resultsContainer.innerHTML = `
             <div class="placeholder">
@@ -51,13 +54,16 @@ async function loadModel() {
 
     return model;
   } catch (error) {
-    console.error("Failed to load model:", error);
+    console.warn("TensorFlow.js model not found, using server fallback:", error.message);
+    useServerFallback = true;
+    modelLoading = false;
+    
     resultsContainer.innerHTML = `
-            <div class="error-message">
-                <strong>Error:</strong> Failed to load model. Make sure the model files exist in the 'model/' folder.
+            <div class="placeholder">
+                <p>✅ Ready! Draw a digit and click "Recognize Digit"</p>
             </div>
         `;
-    modelLoading = false;
+    
     return null;
   }
 }
@@ -101,10 +107,22 @@ async function predict() {
   resultsContainer.innerHTML = '<div class="loading"></div>';
 
   try {
+    // Use server fallback if TensorFlow.js model isn't available
+    if (useServerFallback) {
+      await predictWithServer(resultsContainer);
+      return;
+    }
+
     // Ensure model is loaded
     if (!model) {
       model = await loadModel();
-      if (!model) return;
+      if (!model) {
+        // loadModel sets useServerFallback if it fails
+        if (useServerFallback) {
+          await predictWithServer(resultsContainer);
+        }
+        return;
+      }
     }
 
     // Preprocess the canvas
@@ -148,6 +166,37 @@ async function predict() {
                 <strong>Error:</strong> Prediction failed. ${error.message}
             </div>
         `;
+  }
+}
+
+/**
+ * Perform prediction using server API (fallback for local development)
+ */
+async function predictWithServer(resultsContainer) {
+  try {
+    const imageData = canvas.toDataURL("image/png");
+    
+    const response = await fetch("/predict", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ image: imageData }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Server returned ${response.status}`);
+    }
+
+    const result = await response.json();
+    displayResults(result);
+  } catch (error) {
+    console.error("Server prediction error:", error);
+    resultsContainer.innerHTML = `
+      <div class="error-message">
+        <strong>Error:</strong> Server prediction failed. ${error.message}
+      </div>
+    `;
   }
 }
 
